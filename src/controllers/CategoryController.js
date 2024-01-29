@@ -61,6 +61,30 @@ const CategoryController = {
       res.status(500).json({ error: error.message });
     }
   },
+
+  async update(req, res) {
+    const { id } = req.params;
+    const { name, description } = req.body;
+  
+    try {
+      const existingCategory = await db.query("SELECT * FROM category WHERE id = $1", [id]);
+  
+      if (existingCategory.rows.length === 0) {
+        return res.status(400).json({ error: "Categoria não encontrada" });
+      } else {
+        const updatedCategory = await db.query(
+          "UPDATE category SET name = $2, description = $3 WHERE id = $1 RETURNING *",
+          [id, name, description]
+        );
+  
+          res.json(updatedCategory.rows[0]);
+      }
+
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+  },
+  
 };
 
 module.exports = CategoryController;

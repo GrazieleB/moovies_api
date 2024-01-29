@@ -81,6 +81,36 @@ const MooviesController = {
       res.status(500).json({ error: error.message });
     }
   },
+
+  async update(req, res) {
+    const { id } = req.params;
+    const { title, description, category_id, realease_date } = req.body;
+  
+    try {
+      const existingMovie = await db.query("SELECT * FROM moovie WHERE id = $1", [id]);
+  
+      if (existingMovie.rows.length === 0) {
+        return res.status(404).json({ error: "Filme não encontrado" });
+      }
+
+      const existingCategory = await db.query("SELECT * FROM category WHERE id = $1", [category_id]);
+  
+      if (existingCategory.rows.length === 0) {
+        return res.status(400).json({ error: "Categoria não encontrada" });
+      }
+  
+      const updatedMovie = await db.query(
+        "UPDATE moovie SET title = $1, description = $2, category_id = $3, realease_date = $4 WHERE id = $5 RETURNING *",
+        [title, description, category_id, realease_date, id]
+      );
+  
+      res.json(updatedMovie.rows[0]);
+      
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+  
 };
 
 module.exports = MooviesController;
